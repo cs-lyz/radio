@@ -1,0 +1,14 @@
+# 构建输出
+build/
+sdkconfig
+sdkconfig.old
+
+# 编译中间文件
+*.o
+*.d
+*.elf
+*.map
+*.bin
+
+# VSCode 配置（可选）
+.vscode/

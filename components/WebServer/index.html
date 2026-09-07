@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ka-Radio 简易控制端</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+        }
+        h1 { color: #333; font-size: 24px; margin-top: 0; }
+        
+        .status-box {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* 输入框样式 */
+        .url-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .url-input:focus {
+            border-color: #007bff; /* 聚焦时变蓝 */
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-around;
+        }
+        .btn {
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 45%;
+        }
+        .btn-play { background-color: #007bff; }
+        .btn-stop { background-color: #dc3545; }
+        .btn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🎶 网络电台</h1>
+    
+    <div class="status-box">
+        状态: <span id="status">准备就绪</span>
+    </div>
+
+    <!-- 网址输入框，预填了一个测试用的电台网址 -->
+    <input type="text" id="stream-url" class="url-input" placeholder="请输入电台流媒体网址..." value="https://lhttp.qingting.fm/live/333/64k.mp3">
+
+    <div class="btn-container">
+        <button class="btn btn-play" onclick="sendAction('play')">▶ 播放</button>
+        <button class="btn btn-stop" onclick="sendAction('stop')">⏹ 停止</button>
+    </div>
+</div>
+
+<script>
+    // 发送播放或停止指令
+    function sendAction(action) {
+        document.getElementById('status').innerText = "请求中...";
+        
+        // 基础请求地址，例如: /control?action=play
+        let fetchUrl = '/control?action=' + action;
+        
+        // 如果是点击了“播放”按钮，则需要把网址抓取并附加在后面
+        if (action === 'play') {
+            let urlValue = document.getElementById('stream-url').value;
+            
+            // 检查有没有输入内容
+            if (urlValue.trim() === "") {
+                alert("请输入电台网址！");
+                document.getElementById('status').innerText = "准备就绪";
+                return;
+            }
+            
+            // 【重点】必须用 encodeURIComponent 对网址编码
+            // 例如把 "http://a.com" 变成 "http%3A%2F%2Fa.com"
+            fetchUrl += '&url=' + encodeURIComponent(urlValue);
+        }
+
+        // 发送给 ESP32
+        fetch(fetchUrl)
+            .then(response => response.text())
+            .then(text => {
+                document.getElementById('status').innerText = text;
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "❌ 连接断开";
+            });
+    }
+</script>
+
+</body>
+</html>

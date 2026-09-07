@@ -1,53 +1,12 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-H2 | ESP32-P4 | ESP32-S2 | ESP32-S3 | Linux |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- | -------- | -------- | ----- |
+项目描述：基于 ESP32 设计网络流媒体音频播放终端，实现 HTTPS 音频流拉取、MP3 软件解码、I2S/DMA 音频输出，并内置 Web Server 支持跨平台无线控制和系统状态监控。
 
-# Hello World Example
+技术栈： C、ESP-IDF、FreeRTOS、HTTP/HTTPS、TLS/SSL、I2S/DMA、PCM5102A、PAM8403、I2C、OLED、HTML/JS
 
-Starts a FreeRTOS task to print "Hello World".
+主要工作：
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
-
-## How to use example
-
-Follow detailed instructions provided specifically for this example.
-
-Select the instructions depending on Espressif chip installed on your development board:
-
-- [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
-- [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
-
-
-## Example folder contents
-
-The project **hello_world** contains one source file in C language [hello_world_main.c](main/hello_world_main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── pytest_hello_world.py      Python script used for automated testing
-├── main
-│   ├── CMakeLists.txt
-│   └── hello_world_main.c
-└── README.md                  This is the file you are currently reading
-```
-
-For more information on structure and contents of ESP-IDF projects, please refer to Section [Build System](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html) of the ESP-IDF Programming Guide.
-
-## Troubleshooting
-
-* Program upload failure
-
-    * Hardware connection is not correct: run `idf.py -p PORT monitor`, and reboot your board to see if there are any output logs.
-    * The baud rate for downloading is too high: lower your baud rate in the `menuconfig` menu, and try again.
-
-## Technical support and feedback
-
-Please use the following feedback channels:
-
-* For technical queries, go to the [esp32.com](https://esp32.com/) forum
-* For a feature request or bug report, create a [GitHub issue](https://github.com/espressif/esp-idf/issues)
-
-We will get back to you as soon as possible.
+基于 ESP32 + FreeRTOS 设计网络音频播放终端，实现 HTTPS 音频流拉取、MP3 软件解码、I2S/DMA 音频输出和 Web 页面控制。
+搭建 ESP32 + PCM5102A + PAM8403链路，ESP32 将 MP3 解码为 PCM 后，通过 I2S 输出至 PCM5102A DAC，再经 PAM8403 功放驱动扬声器播放。
+动态配置采样频率声道的音频输出，使用 DMA 多缓冲机制驱动外部 DAC，支持 128kbps MP3 网络音频流稳定播放。
+划分网络拉流、音频解码I2S 播放、Web 服务和 OLED 显示任务，通过缓冲队列实现网络接收、解码和播放解耦。
+针对 TLS 握手和 MP3 解码内存占用高导致的 OOM 问题，优化 HTTP/TLS 缓冲区、任务栈和初始化顺序，使播放过程中最小剩余 Heap 保持在 10 KB 以上。
+部署轻量级 Web Server，支持播放/暂停、URL 配置和状态查询；通过 OLED 和 5s Free Heap 心跳监控系统，连续播放 2h 未出现异常复位。
